@@ -6,8 +6,10 @@ def clean_dummy(df):
         'Postal Code',
         'Year', #numeric
         'Quarter', #categorical
-        'Nature of Mutation', 
-        'Residence Type',
+        'Residence Type_Apartment',
+        'Residence Type_House',
+        'Nature of Mutation_Sale',
+        'Nature of Mutation_Sale Before Completion',
         'Land Area', 
         'Living Area', 
         'Number of Rooms', 
