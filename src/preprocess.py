@@ -2,4 +2,15 @@
 
 
 def clean_data(df):
-    pass
+    y = df['Land Value']
+    X = df[[
+        'Postal Code',
+        'Year', #numeric
+        'Quarter', #categorical
+        'Nature of Mutation', 
+        'Residence Type',
+        'Land Area', 
+        'Living Area', 
+        'Number of Rooms', 
+        'Number of Lots'
+    ]]
