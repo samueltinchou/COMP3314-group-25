@@ -4,7 +4,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_square
 
 def evaluate_model(model, X_test, y_test):
     y_predicted = model.predict(X_test)
-    y_error = y_test - y_error
+    y_error = y_test - y_predicted
 
     metrics = dict()
     metrics['Q1'] = np.percentile(np.abs(y_error), 25)
