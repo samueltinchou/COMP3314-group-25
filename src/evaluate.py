@@ -16,4 +16,5 @@ def evaluate_model(model, X_test, y_test):
     metrics['MSLE'] = mean_squared_log_error(y_test, y_predicted)
     metrics['R2'] = r2_score(y_test, y_predicted)
 
+    return metrics
     
