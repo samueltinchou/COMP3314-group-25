@@ -24,7 +24,7 @@ def shap_initialise(model, X, n):
     sample_index = np.random.choice(len(X), size = n, replace = False)
     X_sample = X.iloc[sample_index]
     explain = shap.TreeExplainer(model)
-    shap_values = explain.shap_values(X_sample)
+    shap_values = explain(X_sample)
     return explain, shap_values, X_sample
 
 def compute_shap_local(model, X_test, n = 100):
@@ -34,7 +34,7 @@ def compute_shap_local(model, X_test, n = 100):
     i = 0 #Random instance
     shap.force_plot(
         explain.expected_value,
-        shap_values[i],
+        shap_values[i].values,
         X_sample.iloc[i],
         matplotlib = True
     )
