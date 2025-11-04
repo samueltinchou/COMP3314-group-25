@@ -12,7 +12,7 @@ def evaluate_model(model, X_test, y_test):
     metrics['Q3'] = np.percentile(np.abs(y_error), 75)
 
     metrics['MAE'] = mean_absolute_error(y_test, y_predicted)
-    metircs['RMSE'] = np.sqrt(mean_squared_error(y_test, y_predicted))
+    metrics['RMSE'] = np.sqrt(mean_squared_error(y_test, y_predicted))
     metrics['MSLE'] = mean_squared_log_error(y_test, y_predicted)
     metrics['R2'] = r2_score(y_test, y_predicted)
 
