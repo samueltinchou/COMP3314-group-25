@@ -9,7 +9,7 @@ def clean_dummy(df):
         'Residence Type_Apartment',
         'Residence Type_House',
         'Nature of Mutation_Sale',
-        'Nature of Mutation_Sale Before Completion',
+        'Nature of Mutation_Before completion',
         'Land Area', 
         'Living Area', 
         'Number of Rooms', 
