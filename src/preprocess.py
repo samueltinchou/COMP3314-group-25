@@ -1,3 +1,4 @@
+import pandas as pd
 
 def rename(df):
     column_rename_dict = {
@@ -14,7 +15,7 @@ def rename(df):
     'Valeur fonciere': 'Property value',
     'No voie': 'Street number',
     'B/T/Q': 'Building/Tower/Block',
-    'Type de voie': 'Type of street',
+    'Type de voie': 'Street type',
     'Code voie': 'Street code',
     'Voie': 'Street name',
     'Code postal': 'Postal code',
@@ -35,7 +36,7 @@ def rename(df):
     'Surface Carrez du 4eme lot': 'Carrez surface of 4th unit',
     '5eme lot': '5th unit',
     'Surface Carrez du 5eme lot': 'Carrez surface of 5th unit',
-    'Nombre de lots': 'Number of units',
+    'Nombre de lots': 'Number of lots',
     'Code type local': 'Local type code',
     'Type local': 'Type of property',
     'Identifiant local': 'Local identifier',
@@ -46,6 +47,7 @@ def rename(df):
     'Surface terrain': 'Land area'
     }
     df.rename(columns = column_rename_dict, inplace = True)
+    return df
 
 def select_column(df):
     column_needed = [
@@ -54,11 +56,35 @@ def select_column(df):
         'Nature of mutation',
         'Property value',
         'Street number',
-        'Building/Tower/Block',
+        'Street type',
+        'Street name',
+        'Postal code',
+        'Municipality',
+        'Number of rooms',
+        'Land area',
+        'Type of land use',
+        'Type of property',
+        'Actual built surface',
+        'Number of lots'
     ]
+    return df[[col for col in column_needed if col in df.columns]]
+
+def sales_and_residential(df):
+    sales_type = ['Vente', "Vente en l'état futur d'achèvement"]
+    residential_type = ['Appartement', 'Maison']
+
+    df_one = df[df['Type of property'].isin(residential_type)]
+    df_two = df_one[df_one['Nature of mutation'].isin(sales_type)]
+    
+    return df_two
+
+def drop_na(df):
+    na_columns = ['Postal code', 'Property value', 'Actual built surface', 'Number of rooms']
+    df_dropped = df.dropna(subset = na_columns)
+    return df_dropped
 
 
-def clean_data(df):
+def clean_data(df_raw):
     selected_cities = [
     'Paris',
     'Marseille',
