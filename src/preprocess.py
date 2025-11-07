@@ -126,6 +126,15 @@ def drop_outlier(df):
 def make_zero(df):
     df['Land area'] = df['Land area'].fillna(0)
     return df
+   
+def geo_address(address):
+    try:
+        url = f"https://api-adresse.data.gouv.fr/search/?q={address}&limit=1"
+        response = requests.get(url).json()
+        coords = response['features'][0]['geometry']['coordinates']
+        return pd.Series({'Longitude': coords[0], 'Latitude': coords[1]})
+    except:
+        return pd.Series({'Longitude': None, 'Latitude': None})
 
 def geocode(df):
     df['Full addr'] = (
@@ -134,18 +143,10 @@ def geocode(df):
         df['Postal code'].astype(str).str.strip() + ' ' +
         df['Municipality'].astype(str).str.strip()
     )
-    df[['Longitude', 'Latitude']] = df['Full address'].apply(geo_addr)
-    df.drop(columns=['Street number', 'Street name', 'Postal code', 'Municipality', 'Full address'], inplace=True)
+    df[['Longitude', 'Latitude']] = df['Full addr'].apply(lambda address: geo_address(address))
+    df.drop(columns=['Street number', 'Street name', 'Postal code', 'Municipality', 'Full addr'], inplace=True)
     return df
 
-def geo_addr(addr):
-    try:
-        url = f"https://api-adresse.data.gouv.fr/search/?q={addr}&limit=1"
-        response = requests.get(url).json()
-        coords = response['features'][0]['geometry']['coordinates']
-        return pd.Series({'Longitude': coords[0], 'Latitude': coords[1]})
-    except:
-        return pd.Series({'Longitude': None, 'Latitude': None})
 
 def clean_data(df):
     df_without_outlier = drop_outlier(df)
