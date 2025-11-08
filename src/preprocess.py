@@ -3,27 +3,6 @@ import numpy as np
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
-def one_hot_encode(df):
-    """
-    One-hot encode 'Nature of mutation' and 'Type of property'.
-    Matches dummy_preprocessing.py logic.
-    """
-    # Filter valid categories (same as sales_and_residential)
-    valid_mutations = ['Vente', "Vente en l'état futur d'achèvement"]
-    valid_types = ['Appartement', 'Maison']
-
-    df = df[df['Nature of mutation'].isin(valid_mutations)]
-    df = df[df['Type of property'].isin(valid_types)]
-
-    # One-hot encode
-    df_encoded = pd.get_dummies(
-        df,
-        columns=['Nature of mutation', 'Type of property'],
-        prefix=['mut', 'type'],
-        drop_first=True  # Avoid dummy variable trap
-    )
-
-    return df_encoded
 
 def rename(df):
     column_rename_dict = {
@@ -171,7 +150,7 @@ def one_hot(df_raw):
     df['Quarter'] = df['Date of mutation'].dt.quarter
     df_d = df.drop(columns = ['Date of mutation'])
 
-    df_one_hot = pd.get_dummies(df_d, columns=['Type of property', 'Nature of mutation', 'Quarter'])
+    df_one_hot = pd.get_dummies(df_d, columns=['Type of property', 'Nature of mutation'])
 
     return df_one_hot
 
@@ -181,42 +160,36 @@ def drop_outlier(df):
     iqr = q1 - q3
 
     ubound = q3 + iqr * 0.5
+    print(f"q1: {q1}, q3: {q3}")
     df_filtered = df[df['Property value'] <= ubound]
     return df_filtered
 
-
-
-
 def clean_data(df):
+
+    df['Property value'] = df['Property value'].str.replace(",00", "")
+    #print(df['Property value'])
+    df['Property value'] = pd.to_numeric(df['Property value'], errors = "coerce")
+    #print(df['Property value'])
+    df = df.rename(columns = {"Actual built surface": "Living area"})
+
     df = drop_outlier(df)
-    df = make_zero(df)
-
-    # --- ONE-HOT ENCODING ---
-    df = one_hot_encode(df)
-
-    # Extract year and quarter from date
-    df['Date of mutation'] = pd.to_datetime(df['Date of mutation'], errors='coerce')
-    df['Year'] = df['Date of mutation'].dt.year
-    df['Quarter'] = df['Date of mutation'].dt.quarter
 
     # Target and features (matches dummy)
     y = df['Property value']
     X = df[[
         'Postal code',
         'Year',
-        'Quarter',
-        'mut_Vente en l\'état futur d\'achèvement',  # "Before completion"
-        'type_Maison',                             # "House"
+        'Type of property_Apartment',
+        'Type of property_House',
+        'Nature of mutation_Sale',
+        'Nature of mutation_Sale of future completion',
         'Land area',
-        'Actual built surface',
+        'Living area',
         'Number of rooms',
         'Number of lots',
         'Longitude',
         'Latitude',
-        'Quarter_1',
-        'Quarter_2',
-        'Quarter_3',
-        'Quarter_4'
+        'Quarter'
     ]]
 
     return X, y
