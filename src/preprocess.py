@@ -142,15 +142,8 @@ def geocode(df):
 
 def one_hot(df_raw):
     df = df_raw.copy()
-    type_map = {
-        "Maison": "House",
-        "Appartement": "Apartment"
-    }
-
     df['Nature of mutation'] = np.where(df['Nature of mutation'] == "Vente", "Sale", "Sale of future completion")
-
-    df['Type of property'] = df['Type of property'].replace(type_map)
-
+    df['Type of property'] = np.where(df['Type of property'] == "Maison", "House", "Apartment")
     df['Date of mutation'] = pd.to_datetime(df['Date of mutation'], format = "%d/%m/%Y")
     df['Year'] = df['Date of mutation'].dt.year
     df['Quarter'] = df['Date of mutation'].dt.quarter
@@ -161,32 +154,45 @@ def one_hot(df_raw):
     return df_one_hot
 
 def drop_outlier(df):
-    q1 = df['Property value'].quartile(0.25)
-    q3 = df['Property value'].quartile(0.75)
+    q1 = df['Property value'].quantile(0.25)
+    q3 = df['Property value'].quantile(0.75)
     iqr = q1 - q3
 
     ubound = q3 + iqr * 0.5
     df_filtered = df[df['Property value'] <= ubound]
     return df_filtered
 
+
+
+
 def clean_data(df):
+    print("Function clean_data started")
+    df['Property value'] = df['Property value'].str.replace(',', '.')
+    df['Property value'] = pd.to_numeric(df['Property value'], errors='coerce')
+    df = df[df['Property value'].notna()]
     df_without_outlier = drop_outlier(df)
+    df = df_without_outlier
     
+    df.rename(columns={"Actual built surface":"Living Area"})
+
     #last thing to do
-    y = df['Land Value']
+    y = df['Property Value']
     X = df[[
         'Postal Code',
         'Year', #numeric
-        'Quarter', #categorical
-        'Residence Type_Apartment',
-        'Residence Type_House',
+        'Type of property_Apartment',
+        'Type of property_House',
         'Nature of Mutation_Sale',
-        'Nature of Mutation_Before completion',
+        'Nature of Mutation_Sale of future completion',
         'Land Area', 
         'Living Area', 
         'Number of Rooms', 
         'Number of Lots',
         'Longitude',
-        'Latitude'
+        'Latitude',
+        'Quarter_1',
+        'Quarter_2',
+        'Quarter_3',
+        'Quarter_4'
     ]]
     return X, y
