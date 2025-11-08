@@ -3,6 +3,28 @@ import numpy as np
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
+def one_hot_encode(df):
+    """
+    One-hot encode 'Nature of mutation' and 'Type of property'.
+    Matches dummy_preprocessing.py logic.
+    """
+    # Filter valid categories (same as sales_and_residential)
+    valid_mutations = ['Vente', "Vente en l'état futur d'achèvement"]
+    valid_types = ['Appartement', 'Maison']
+
+    df = df[df['Nature of mutation'].isin(valid_mutations)]
+    df = df[df['Type of property'].isin(valid_types)]
+
+    # One-hot encode
+    df_encoded = pd.get_dummies(
+        df,
+        columns=['Nature of mutation', 'Type of property'],
+        prefix=['mut', 'type'],
+        drop_first=True  # Avoid dummy variable trap
+    )
+
+    return df_encoded
+
 def rename(df):
     column_rename_dict = {
     'Identifiant de document': 'Document ID',
@@ -151,24 +173,31 @@ def geocode(df):
 
 
 def clean_data(df):
-    df_without_outlier = drop_outlier(df)
-    
+    df = drop_outlier(df)
+    df = make_zero(df)
 
-    #last thing to do
-    y = df['Land Value']
+    # --- ONE-HOT ENCODING ---
+    df = one_hot_encode(df)
+
+    # Extract year and quarter from date
+    df['Date of mutation'] = pd.to_datetime(df['Date of mutation'], errors='coerce')
+    df['Year'] = df['Date of mutation'].dt.year
+    df['Quarter'] = df['Date of mutation'].dt.quarter
+
+    # Target and features (matches dummy)
+    y = df['Property value']
     X = df[[
-        'Postal Code',
-        'Year', #numeric
-        'Quarter', #categorical
-        'Residence Type_Apartment',
-        'Residence Type_House',
-        'Nature of Mutation_Sale',
-        'Nature of Mutation_Before completion',
-        'Land Area', 
-        'Living Area', 
-        'Number of Rooms', 
-        'Number of Lots',
+        'Postal code',
+        'Year',
+        'Quarter',
+        'mut_Vente en l\'état futur d\'achèvement',  # "Before completion"
+        'type_Maison',                             # "House"
+        'Land area',
+        'Actual built surface',
+        'Number of rooms',
+        'Number of lots',
         'Longitude',
         'Latitude'
     ]]
+
     return X, y
