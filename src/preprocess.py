@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import requests
+from concurrent.futures import ThreadPoolExecutor
 
 def rename(df):
     column_rename_dict = {
@@ -79,7 +80,7 @@ def sales_and_residential(df):
     return df_two
 
 def drop_na(df):
-    na_columns = ['Postal code', 'Property value', 'Actual built surface', 'Number of rooms']
+    na_columns = ['Postal code', 'Property value', 'Actual built surface', 'Number of rooms', 'Street name']
     df_dropped = df.dropna(subset = na_columns)
     return df_dropped
 
@@ -125,6 +126,7 @@ def drop_outlier(df):
 
 def make_zero(df):
     df['Land area'] = df['Land area'].fillna(0)
+    df['Street number'] = df['Street number'].fillna(0)
     return df
    
 def geo_address(address):
