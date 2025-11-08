@@ -137,15 +137,6 @@ def get_postal_map():
     }
     return postal_map
 
-def drop_outlier(df):
-    q1 = df['Property value'].quartile(0.25)
-    q3 = df['Property value'].quartile(0.75)
-    iqr = q1 - q3
-
-    ubound = q3 + iqr * 0.5
-    df_filtered = df[df['Property value'] <= ubound]
-    return df_filtered
-
 def make_zero(df):
     df['Land area'] = df['Land area'].fillna(0)
     df['Street number'] = df['Street number'].fillna(0)
@@ -171,6 +162,34 @@ def geocode(df):
     df.drop(columns=['Street number', 'Street name', 'Postal code', 'Municipality', 'Full addr'], inplace=True)
     return df
 
+def one_hot(df_raw):
+    df = df_raw.copy()
+    type_map = {
+        "Maison": "House",
+        "Appartement": "Apartment"
+    }
+
+    df['Nature of mutation'] = np.where(df['Nature of mutation'] == "Vente", "Sale", "Sale of future completion")
+
+    df['Type of property'] = df['Type of property'].replace(type_map)
+
+    df['Date of mutation'] = pd.to_datetime(df['Date of mutation'], format = "%d/%m/%Y")
+    df['Year'] = df['Date of mutation'].dt.year
+    df['Quarter'] = df['Date of mutation'].dt.quarter
+    df_d = df.drop(columns = ['Date of mutation'])
+
+    df_one_hot = pd.get_dummies(df_d, columns=['Type of property', 'Nature of mutation', 'Quarter'])
+
+    return df_one_hot
+
+def drop_outlier(df):
+    q1 = df['Property value'].quartile(0.25)
+    q3 = df['Property value'].quartile(0.75)
+    iqr = q1 - q3
+
+    ubound = q3 + iqr * 0.5
+    df_filtered = df[df['Property value'] <= ubound]
+    return df_filtered
 
 def clean_data(df):
     df = drop_outlier(df)
