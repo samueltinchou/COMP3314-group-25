@@ -71,5 +71,5 @@ def compute_shap_global(explain, shap_values, X_sample):
     shap.summary_plot(shap_values, X_sample, plot_type="dot")
 
 def compute_shap_cluster(explain, shap_values, X_sample):
-    shap.summary_plot(shap_values, X_sample, plot_type="dot", cluster = True)
+    shap.summary_plot(shap_values, X_sample, plot_type="bar", cluster = True)
 
