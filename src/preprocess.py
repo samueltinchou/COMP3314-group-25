@@ -160,7 +160,7 @@ def drop_outlier(df):
     iqr = q1 - q3
 
     ubound = q3 + iqr * 0.5
-    print(f"q1: {q1}, q3: {q3}")
+    #print(f"q1: {q1}, q3: {q3}")
     df_filtered = df[df['Property value'] <= ubound]
     return df_filtered
 
