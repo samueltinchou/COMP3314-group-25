@@ -2,6 +2,7 @@
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_squared_log_error , median_absolute_error, r2_score
 import shap
+import pandas as pd
 
 
 def evaluate_model(model, X_test, y_test):
@@ -39,16 +40,21 @@ def evaluate_model(model, X_test, y_test):
 
     return metrics
 
-def shap_initialise(model, X, n):
+def feature_i(model, X_train):
+    model_fi = model.feature_importances_
+    index = X_train.columns
+    feature_importance = pd.Series(model_fi, index = index)
+    feature_importance = feature_importance.sort_values(ascending=False)
+    return feature_importance
+
+def shap_initialise(model, X, n = 100):
     sample_index = np.random.choice(len(X), size = n, replace = False)
     X_sample = X.iloc[sample_index]
     explain = shap.TreeExplainer(model)
-    shap_values = explain(X_sample)
+    shap_values = explain.shap_values(X_sample)
     return explain, shap_values, X_sample
 
-def compute_shap_local(model, X_test, n = 100):
-    explain, shap_values, X_sample = shap_initialise(model, X_test, n)
-
+def compute_shap_local(explain, shap_values, X_sample):
     #Local
     i = 0 #Random instance
     shap.force_plot(
@@ -59,9 +65,11 @@ def compute_shap_local(model, X_test, n = 100):
     )
     shap.plots.bar(shap_values[i])
 
-def compute_shap_global(model, X_test, n = 100):
-    explain, shap_values, X_sample = shap_initialise(model, X_test, n)
-
+def compute_shap_global(explain, shap_values, X_sample):
     #Global
-    shap.summary_plot(shap_values, X_sample)
+    shap.summary_plot(shap_values, X_sample, plot_type="bar")
     shap.summary_plot(shap_values, X_sample, plot_type="dot")
+
+def compute_shap_cluster(explain, shap_values, X_sample):
+    shap.summary_plot(shap_values, X_sample, plot_type="dot", cluster = True)
+

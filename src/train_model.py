@@ -35,4 +35,7 @@ def train_random_forest(X,y,define_parameter=None):
 
     #According to the paper, n_estimators = 2500, max_depth = 32, bootstrap = F
 
-    return best_model, best_params, X_test, y_test
+    if define_parameter is not None:
+        return best_model, best_params, X_test, y_test
+    else:
+        return best_model, best_params, X_test, y_test, best_params
