@@ -24,6 +24,7 @@ def evaluate_model(model, X_test, y_test):
     # From paper
     metrics['MAPE (%)'] = np.mean(np.abs((y_test - y_predicted) / y_test)) * 100
     metrics['MedAE (€)'] = median_absolute_error(y_test, y_predicted)
+    metrics['MSLE'] = mean_squared_log_error(y_test, y_predicted)
 
     # Pretty print (like dummy)
     print("\n" + "="*60)
@@ -32,8 +33,9 @@ def evaluate_model(model, X_test, y_test):
     for k, v in metrics.items():
         if 'MAPE' in k:
             print(f"{k:20}: {v:8.2f}")
+        
         elif isinstance(v, float):
-            print(f"{k:20}: {v:,.0f}")
+            print(f"{k:20}: {v:,.10f}")
         else:
             print(f"{k:20}: {v}")
     print("="*60)
@@ -48,28 +50,49 @@ def feature_i(model, X_train):
     return feature_importance
 
 def shap_initialise(model, X, n = 100):
+    print("Start initialising")
     sample_index = np.random.choice(len(X), size = n, replace = False)
     X_sample = X.iloc[sample_index]
     explain = shap.TreeExplainer(model)
     shap_values = explain.shap_values(X_sample)
     return explain, shap_values, X_sample
 
-def compute_shap_local(explain, shap_values, X_sample):
+def compute_shap_local(shap_values, X_sample):
     #Local
     i = 0 #Random instance
     shap.force_plot(
-        explain.expected_value,
+        shap_values[i].base_values,
         shap_values[i].values,
         X_sample.iloc[i],
         matplotlib = True
     )
     shap.plots.bar(shap_values[i])
 
-def compute_shap_global(explain, shap_values, X_sample):
+def compute_shap_global(shap_values, X_sample):
     #Global
     shap.summary_plot(shap_values, X_sample, plot_type="bar")
     shap.summary_plot(shap_values, X_sample, plot_type="dot")
 
-def compute_shap_cluster(explain, shap_values, X_sample):
-    shap.summary_plot(shap_values, X_sample, plot_type="bar", cluster = True)
+def compute_shap_cluster(shap_values, X_sample):
+    # Manual clustering for regression
+    from scipy.cluster.hierarchy import linkage, leaves_list
+    from scipy.spatial.distance import pdist
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    abs_shap = np.abs(shap_values)
+    dist = pdist(abs_shap.T, metric='correlation')
+    Z = linkage(dist, method='average')
+    order = leaves_list(Z)
+
+    shap.summary_plot(
+        shap_values[:, order],
+        X_sample.iloc[:, order],
+        feature_names=X_sample.columns[order],
+        plot_type="bar",
+        show=False
+    )
+    plt.title("SHAP Summary (Clustered - Regression)")
+    plt.tight_layout()
+    plt.show()
 
