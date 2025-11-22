@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_squared_log_error , median_absolute_error, r2_score
 import shap
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def evaluate_model(model, X_test, y_test):
@@ -68,10 +69,58 @@ def compute_shap_local(shap_values, X_sample):
     )
     shap.plots.bar(shap_values[i])
 
-def compute_shap_global(shap_values, X_sample):
-    #Global
-    shap.summary_plot(shap_values, X_sample, plot_type="bar")
-    shap.summary_plot(shap_values, X_sample, plot_type="dot")
+def compute_shap_global(shap_values, X_sample, max_display=20):
+    """
+    Works whether shap_values is:
+    - numpy array (regression or binary classification)
+    - list of arrays (multi-class)
+    - or output from XGBoost/LightGBM which sometimes wraps in list
+    """
+    
+    # --- Convert shap_values to numpy array of shape (n_samples, n_features) ---
+    if isinstance(shap_values, list):
+        # Multi-class or wrapped output → take first class (or average later if needed)
+        shap_vals = np.abs(shap_values[0]) if len(shap_values) == 1 else np.abs(shap_values[0])
+    else:
+        shap_vals = np.abs(shap_values)
+    
+    # Mean absolute SHAP value per feature (global importance)
+    mean_abs_shap = shap_vals.mean(axis=0)
+    
+    # Get feature names
+    feature_names = X_sample.columns if hasattr(X_sample, 'columns') else [f'feature_{i}' for i in range(X_sample.shape[1])]
+    
+    # Sort by importance
+    idx = np.argsort(mean_abs_shap)[-max_display:][::-1]
+    mean_abs_shap = mean_abs_shap[idx]
+    feature_names = [feature_names[i] for i in idx]
+    
+    # --- Bar plot with values on bars ---
+    fig, ax = plt.subplots(figsize=(10, 8))
+    bars = ax.barh(range(len(mean_abs_shap)-1, -1, -1), mean_abs_shap, color='steelblue')
+    
+    # Add text labels on the bars
+    for i, (val, name) in enumerate(zip(mean_abs_shap, feature_names[::-1])):
+        ax.text(val + max(mean_abs_shap)*0.01, len(mean_abs_shap)-1-i, 
+                f'{val:.3f}', va='center', ha='left', fontweight='bold', fontsize=10)
+    
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    
+    ax.set_yticks(range(len(feature_names)))
+    ax.set_yticklabels(feature_names[::-1])
+    ax.tick_params(axis='y', length=0)
+    ax.tick_params(axis='x', colors='gray')
+    ax.set_xlabel("Mean |SHAP value| (Global Importance)")
+    ax.set_title("Top Feature Importance (SHAP)")
+    plt.tight_layout()
+    plt.show()
+    
+    # --- Also show dot plot (beeswarm) ---
+    print("\nBeeswarm summary plot:")
+    shap.summary_plot(shap_values, X_sample, max_display=max_display)
 
 def compute_shap_cluster(shap_values, X_sample):
     # Manual clustering for regression
