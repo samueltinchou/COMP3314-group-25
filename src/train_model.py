@@ -24,7 +24,7 @@ def train_random_forest(X,y,define_parameter=None):
         param_grid=param_grid,
         cv=5, #fold
         scoring=make_scorer(r2_score),
-        verbose=1
+        verbose=2
     )
     grid_search.fit(X_train, y_train)
 
