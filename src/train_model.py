@@ -38,4 +38,4 @@ def train_random_forest(X,y,define_parameter=None):
     if define_parameter is not None:
         return best_model, best_params, X_test, y_test
     else:
-        return best_model, best_params, X_test, y_test, best_params
+        return best_model, best_params, X_test, y_test
