@@ -4,6 +4,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_square
 import shap
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 
 def evaluate_model(model, X_test, y_test):
@@ -50,7 +51,7 @@ def feature_i(model, X_train):
     feature_importance = feature_importance.sort_values(ascending=False)
     return feature_importance
 
-def shap_initialise(model, X, n = 100):
+def shap_initialise(model, X, n = 500):
     print("Start initialising")
     sample_index = np.random.choice(len(X), size = n, replace = False)
     X_sample = X.iloc[sample_index]
@@ -69,7 +70,7 @@ def compute_shap_local(shap_values, X_sample):
     )
     shap.plots.bar(shap_values[i])
 
-def compute_shap_global(shap_values, X_sample, max_display=20):
+def compute_shap_global(city, shap_values, X_sample, max_display=20, base_path="../reports/Result"):
     """
     Works whether shap_values is:
     - numpy array (regression or binary classification)
@@ -116,11 +117,13 @@ def compute_shap_global(shap_values, X_sample, max_display=20):
     ax.set_xlabel("Mean |SHAP value| (Global Importance)")
     ax.set_title("Top Feature Importance (SHAP)")
     plt.tight_layout()
+    plt.savefig(os.path.join(base_path, f"shap_bar_{city.lower()}.png"), dpi=300, bbox_inches='tight')
     plt.show()
     
     # --- Also show dot plot (beeswarm) ---
     print("\nBeeswarm summary plot:")
-    shap.summary_plot(shap_values, X_sample, max_display=max_display)
+    bbb = shap.summary_plot(shap_values, X_sample, max_display=max_display)
+    bbb.savefig(os.path.join(base_path, f"shap_dot_{city.lower()}.png"), dpi=300, bbox_inches='tight')
 
 def compute_shap_cluster(shap_values, X_sample):
     # Manual clustering for regression
