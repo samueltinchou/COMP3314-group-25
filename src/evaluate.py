@@ -119,11 +119,13 @@ def compute_shap_global(city, shap_values, X_sample, max_display=20, base_path="
     plt.tight_layout()
     plt.savefig(os.path.join(base_path, f"shap_bar_{city.lower()}.png"), dpi=300, bbox_inches='tight')
     plt.show()
+    plt.close()
     
     # --- Also show dot plot (beeswarm) ---
     print("\nBeeswarm summary plot:")
-    bbb = shap.summary_plot(shap_values, X_sample, max_display=max_display)
-    bbb.savefig(os.path.join(base_path, f"shap_dot_{city.lower()}.png"), dpi=300, bbox_inches='tight')
+    plt.figure(figsize=(8, 6))
+    shap.summary_plot(shap_values, X_sample, max_display=max_display)
+    plt.savefig(os.path.join(base_path, f"shap_dot_{city.lower()}.png"), dpi=300, bbox_inches='tight')
 
 def compute_shap_cluster(shap_values, X_sample):
     # Manual clustering for regression
