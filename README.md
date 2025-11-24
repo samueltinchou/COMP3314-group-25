@@ -4,5 +4,8 @@ Tchuente, D. Real Estate Automated Valuation Model with Explainable Artificial I
 
 There are two main parts of the model training:
 1. To pre-process them
-   
-3. 
+Execute all the blocks in "Step 1"
+2. To train them and export / print results
+Execute all the blocks in "Step 2"
+
+Remember to load the modules and functions for initial set-up, which is the first block
