@@ -1,2 +1,5 @@
-# COMP3314-group-25
-PPT Link: https://www.canva.com/design/DAG3nHsAa8I/Ioor3dh0ZUEW-odGe0y1OQ/edit
+Original Paper Title, Author and citation:
+
+Tchuente, D. Real Estate Automated Valuation Model with Explainable Artificial Intelligence Based on Shapley Values. J Real Estate Finan Econ (2024). https://doi.org/10.1007/s11146-024-09998-9
+
+To set up the 
